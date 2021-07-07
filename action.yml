@@ -8,12 +8,14 @@ inputs:
   cf_dist:
     description: CloudFront distribution
     required: true
+  source_dir:
+    description: Source directory
+    required: false
+    default: dist
 runs:
   using: 'composite'
   steps:
-    - run: aws s3 rm s3://${{ inputs.bucket }}/ --recursive --region eu-west-1 --exclude "web-components/*"
-      shell: bash
-    - run: aws s3 cp dist s3://${{ inputs.bucket }} --recursive --region eu-west-1
+    - run: aws s3 sync ${{ inputs.source_dir }} s3://${{ inputs.bucket }} --delete --no-progress --region eu-west-1
       shell: bash
     - run: aws cloudfront create-invalidation --distribution-id ${{ inputs.cf_dist }} --paths "/css" "/fonts" "/images" "/js" "/favicon.ico" "/index.html"
       shell: bash
