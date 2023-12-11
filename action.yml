@@ -12,10 +12,17 @@ inputs:
     description: Source directory
     required: false
     default: dist
+  paths_to_invalidate:
+    description: List of path to invalidate
+    required: true
+    default: "/css /fonts /images /js /favicon.ico /index.html /configuration/*.json"
 runs:
   using: 'composite'
   steps:
     - run: aws s3 sync ${{ inputs.source_dir }} s3://${{ inputs.bucket }} --delete --no-progress --region eu-west-1
       shell: bash
-    - run: aws cloudfront create-invalidation --distribution-id ${{ inputs.cf_dist }} --paths "/css" "/fonts" "/images" "/js" "/favicon.ico" "/index.html" "/configuration/*.json"
-      shell: bash
+    - name: Invalidate AWS CloudFront
+      uses: chetan/invalidate-cloudfront-action@v2.4
+      env:
+        DISTRIBUTION: ${{ inputs.cf_dist }}
+        PATHS: ${{ inputs.paths_to_invalidate }}
