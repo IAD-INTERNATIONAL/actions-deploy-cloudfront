@@ -22,7 +22,13 @@ runs:
     - run: aws s3 sync ${{ inputs.source_dir }} s3://${{ inputs.bucket }} --delete --no-progress --region eu-west-1
       shell: bash
     - name: Invalidate AWS CloudFront
-      uses: chetan/invalidate-cloudfront-action@v2.4
-      env:
-        DISTRIBUTION: ${{ inputs.cf_dist }}
-        PATHS: ${{ inputs.paths_to_invalidate }}
+      uses: Wandalen/wretry.action@master
+      with:
+        action: chetan/invalidate-cloudfront-action@v3.5.0
+        with: |
+          env: |
+            DISTRIBUTION: ${{ inputs.cf_dist }}
+            PATHS: ${{ inputs.paths_to_invalidate }}
+        attempt_limit: 3
+        attempt_delay: 30
+
